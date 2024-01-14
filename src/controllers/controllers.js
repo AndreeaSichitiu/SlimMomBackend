@@ -1,110 +1,21 @@
 const {
-  getAllProducts,   
-  createUser,
+   
+  getAllProducts,
+  createUser,   
   loginUser,
   findUser,
   verifyEmail,
- 
 } = require("../services/index.js");
 
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const secret = process.env.SECRET;
+ 
+// Products Controller 
 
-const { Product, User } = require('../services/schemas'); 
-const { createNotFoundError } = require("../../middlewares");
-
-const getDailyRateController = async (req, res) => {
-    const dailyRate = calculateDailyRate(req.body);
-    const { notAllowedProducts, notAllowedProductsAll } = await notAllowedProductsObj(req.body.bloodType);
-    return res.status(200).json({ dailyRate, notAllowedProducts, notAllowedProductsAll, });
-};
-
-const getDailyRateUserController = async (req, res) => {
-    const { user } = req;
-    const dailyRate = calculateDailyRate(user.infouser);
-    const { notAllowedProducts, notAllowedProductsAll } = await notAllowedProductsObj(user.infouser.bloodType);
-    user.infouser = {
-        ...user.infouser,
-        dailyRate,
-        notAllowedProducts,
-        notAllowedProductsAll,
-    };
-    await User.findByIdAndUpdate(user._id, user);
-    return res.status(200).json({ data: user.infouser });
-};
-
-const getAllProductsByQuery = async (req, res, next) => {
-  const { query: { title, limit = 10 } } = req;
-  const titleFromUrl = decodeURI(title).trim();
-  const products = await Product.find({
-    $or: [
-      { $text: { $search: titleFromUrl } },
-    ],
-  }).limit(limit);
-  if (products.length === 0) {
-    const newProducts = await Product.find({
-      $or: [
-        { 'title.ua': { $regex: titleFromUrl, $options: 'i' } },
-      ],
-    }).limit(limit);
-
-    if (newProducts.length === 0) {
-      return next(createNotFoundError());
-    }
-    return res.status(200).json({ data: newProducts });
-  }
-  return res.status(200).json({ data: products });
-};
+const getAllProductsController = async (req, res, next) => {
 
 
-const getNotAllowedProductsObj = require("./getNotAllowedProducts");
-
-const calculateDailyRate = ({ currentWeight, height, age, desiredWeight }) => {
-  return Math.floor(
-      10 * currentWeight +
-      6.25 * height -
-      5 * age -
-      161 - 10 * (currentWeight - desiredWeight),
-  );
-};
-
-const getNotAllowedProducts = async bloodType => {
-  const blood = [null, false, false, false, false];
-  blood[bloodType] = true;
-  const products = Product.find({
-      groupBloodNotAllowed: { $all: [blood] },
-  });
-  return products;
-};
-
-const notAllowedProductsObj = async bloodType => {
-    const notAllowedProductsArray = await getNotAllowedProducts(bloodType);
-    const arr = [];
-    notAllowedProductsArray.map(({ title }) => arr.push(title.ua));
-    let notAllowedProductsAll = [...new Set(arr)];
-    let notAllowedProducts = [];
-    const message = ['You can eat everything'];
-    if (notAllowedProductsAll[0] === undefined) {
-        notAllowedProducts = message;
-    } else {
-        do {
-            const index = Math.floor(Math.random() * notAllowedProductsAll.length);
-            if (notAllowedProducts.includes(notAllowedProductsAll[index]) || notAllowedProducts.includes('undefined')) {
-                break;
-            } else {
-                notAllowedProducts.push(notAllowedProductsAll[index]);
-            }
-        } while (notAllowedProducts.length !== 5);
-    };
-    if (notAllowedProductsAll.length === 0) {
-        notAllowedProductsAll = message;
-    };
-    const result = { notAllowedProductsAll, notAllowedProducts };
-    return result;
-};
-
-const get = async (req, res, next) => {
   try {
     const results = await getAllProducts();
 
@@ -114,6 +25,7 @@ const get = async (req, res, next) => {
       data: results,
     });
   } catch (error) {
+    console.info(error);
     res.status(404).json({
       status: "error",
       code: 404,
@@ -121,69 +33,9 @@ const get = async (req, res, next) => {
   }
 };
 
- 
 
-// const add = async (req, res, next) => {
-//   try {
-//     const { name, email, phone, favorite } = req.body;
-//     const result = await createContact({ name, email, phone, favorite });
-//     res.status(201).json({
-//       status: "Success",
-//       code: 200,
-//       data: result,
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       status: "error",
-//       code: 400,
-//       message: "Missing request fields!",
-//       debug: error,
-//     });
-//   }
-// };
+// User Controllers
 
-// const remove = async (req, res, next) => {
-//   const id = req.params.contactId;
-
-//   try {
-//     const result = await deleteContact(id);
-//     console.log("Contact removed");
-//     res.status(200).json({
-//       status: "Success",
-//       code: 200,
-//       data: result,
-//     });
-//   } catch (error) {
-//     res.status(404).json({
-//       status: "error",
-//       code: 404,
-//       message: "Contact not found!",
-//     });
-//   }
-// };
-
-// const update = async (req, res, next) => {
-//   const id = req.params.contactId;
-//   const data = req.body;
-
-//   try {
-//     const result = await updateContact(id, data);
-//     console.log("Contact updated");
-//     res.status(201).json({
-//       status: "Success",
-//       code: 201,
-//       data: result,
-//     });
-//   } catch (error) {
-//     res.status(404).json({
-//       status: "error",
-//       code: 404,
-//       message: "Contact not found!",
-//     });
-//   }
-// };
-
- 
 const createUserController = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -298,7 +150,7 @@ const getUsersController = async (req, res, next) => {
         code: 200,
         data: {
           email: result.email,
-          subscription: result.subscription,
+          
         },
       });
     } else {
@@ -311,7 +163,7 @@ const getUsersController = async (req, res, next) => {
     res.status(500).json({ status: "error", message: "Server error" });
   }
 };
-
+ 
 const verifyEmailController = async (req, res, next) => {
   try {
     const { verificationToken } = req.params;
@@ -328,21 +180,11 @@ const verifyEmailController = async (req, res, next) => {
 };
 
 module.exports = {
-  calculateDailyRate,
-  getNotAllowedProducts,
-  getNotAllowedProductsObj,
-  get,
-  // getById,
-  // add,
-  // remove,
-  // update,
-  getDailyRateUserController,
-  getAllProductsByQuery,
-  getDailyRateController,
+ 
+  getAllProductsController,
   createUserController,
   loginUserController,
   logoutUserController,
-  getUsersController,
- 
+  getUsersController, 
   verifyEmailController,
 };

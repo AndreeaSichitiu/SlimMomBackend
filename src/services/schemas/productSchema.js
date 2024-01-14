@@ -24,8 +24,6 @@ const productSchema = new Schema({
     },
 });
 
-const Product = moongose.model("product", productSchema);
+const Product = moongose.model("products", productSchema);
 
-module.exports = {
-    Product,
-};
+module.exports = Product;

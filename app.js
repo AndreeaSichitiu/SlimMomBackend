@@ -21,6 +21,8 @@ app.use(express.json());
 
 app.use("/api", contactsRouter);
 
+
+
 app.use(express.static(path.join(__dirname, "public")));
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);

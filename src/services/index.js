@@ -1,27 +1,17 @@
-const Product = require("./schemas/productsSchema.js");
-const User = require("./schemas/userSchema.js");
+ 
+const User = require("./schemas/usersSchema.js");
 const sgMail = require("@sendgrid/mail");
+const Product = require("./schemas/productSchema.js");
  
  
 
+
 const getAllProducts = async () => {
-  return Product.find();
+   return  Product.find();
 };
-const getContactById = async (id) => {
-  return Product.findById(id);
-};
-const createContact = async ({ name, email, phone, favorite }) => {
-  return Product.create({ name, email, phone, favorite });
-};
-const deleteContact = async (id) => {
-  return Product.findByIdAndDelete(id);
-};
-const updateContact = async (id, data) => {
-  return Product.findByIdAndUpdate(id, data, { new: true });
-};
-const updateContactStatus = async (id, data) => {
-  return Product.findByIdAndUpdate(id, data, { new: true });
-};
+
+ 
+
 
 const createUser = async ({ email, password }) => {
   const userExistent = await User.findOne({ email });
@@ -36,7 +26,7 @@ const createUser = async ({ email, password }) => {
     to: email,
     from: "andra28marin@yahoo.com",
     subject: "Email de verificare cont!",
-    text: `Codul de verificare este ${codUnicDeVerificare} / http://localhost:3000/api/users/verify/${codUnicDeVerificare}`,
+    text: `Codul de verificare este ${codUnicDeVerificare} / http://localhost:5000/api/users/verify/${codUnicDeVerificare}`,
   };
 
   sgMail
@@ -50,6 +40,8 @@ const createUser = async ({ email, password }) => {
   newUser.setPassword(password);
   return await newUser.save();
 };
+
+
 
 const loginUser = async ({ email, password, token }) => {
   const user = await User.findOne({ email });
@@ -84,13 +76,8 @@ const verifyEmail = async (verificationToken) => {
 
 
 module.exports = {
-  getAllProducts,
-  getContactById,
-  createContact,
-  deleteContact,
-  updateContact,
-  updateContactStatus,
-  createUser,
+  getAllProducts,  
+  createUser,   
   loginUser,
   findUser,
   verifyEmail,

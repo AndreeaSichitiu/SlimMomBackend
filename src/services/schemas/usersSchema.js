@@ -3,62 +3,46 @@ const bCrypt = require("bcryptjs");
 const Schema = moongose.Schema;
  
 
-
 const userSchema = new Schema({
-  name: {
+  password: {
     type: String,
-    required: [true, 'Name is required'],
+    required: [true, "Password is required"],
   },
   email: {
     type: String,
     required: [true, "Email is required"],
     unique: true,
   },
-  password: {
-    type: String,
-    required: [true, "Password is required"],
-  },
+  
   token: {
     type: String,
     default: null,
   },
-   verificationToken: {
+  
+  verificationToken: {
     type: String,
     required: [true, "Verify token is required"],
   },
-  infouser: {
-    currentWeight: {
-      type: Number,
-      default: null
-    },
-    height: {
-      type: Number,
-      default: null
-    },
-    age: {
-      type: Number,
-      default: null
-    },
-    desiredWeight: {
-      type: Number,
-      default: null
-    },
-    bloodType: {
-      type: Number,
-      default: null
-    }, 
-    dailyRate: {
-      type: Number,
-      default: null
-    },
-    notAllowedProducts: {
-      type: [String],
-      default: null
-    }, 
-    notAllowedProductsAll: {
-      type: [String],
-      default: null
-    }, },
+  height: {
+    type: Number,
+    default: 0,
+  },
+  age: {
+    type: Number,
+    default: 0,
+  },
+  currentWeight: {
+    type: Number,
+    default: 0,
+  },
+  desiredWeight: {
+    type: Number,
+    default: 0,
+  },
+  bloodType: {
+    type: Number,
+    default: 0,
+  },
 });
 
 userSchema.methods.setPassword = function (password) {
@@ -71,7 +55,6 @@ userSchema.methods.validPassword = function (password) {
 userSchema.methods.setToken = function (token) {
   this.token = token;
 };
-
 
 const User = moongose.model("users", userSchema);
 module.exports = User;
